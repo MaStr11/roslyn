@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Test.Utilities;
 using Microsoft.CodeAnalysis.Test.Utilities;
 using Roslyn.Test.Utilities;
 using Roslyn.Test.Utilities.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -199,8 +200,8 @@ class A
             var parsedTree = ParseWithRoundTripCheck(source.ToString());
             IEnumerable<Diagnostic> actualErrors = parsedTree.GetDiagnostics();
             Assert.Equal("202", actualErrors.Count().ToString());
-            Assert.Equal("(1,1201): error CS1056: Unexpected character '\\u003C'", actualErrors.ElementAt(200).ToString());
-            Assert.Equal("(1,1207): error CS1056: Unexpected character '\\u003E\\u003E\\u003E\\u003E'", actualErrors.ElementAt(201).ToString());
+            Assert.Equal("(1,1201): error CS1056: Unexpected character '\\u003C'", GetDiagnosticTextWithEnglishCulture(actualErrors.ElementAt(200)));
+            Assert.Equal("(1,1207): error CS1056: Unexpected character '\\u003E\\u003E\\u003E\\u003E'", GetDiagnosticTextWithEnglishCulture(actualErrors.ElementAt(201)));
         }
 
         [Fact]
@@ -217,8 +218,8 @@ class A
             var parsedTree = ParseWithRoundTripCheck(source.ToString());
             IEnumerable<Diagnostic> actualErrors = parsedTree.GetDiagnostics();
             Assert.Equal("202", actualErrors.Count().ToString());
-            Assert.Equal("(1,2001): error CS1056: Unexpected character '\\U0000003C'", actualErrors.ElementAt(200).ToString());
-            Assert.Equal("(1,2011): error CS1056: Unexpected character '\\u003E\\u003E\\u003E\\u003E'", actualErrors.ElementAt(201).ToString());
+            Assert.Equal("(1,2001): error CS1056: Unexpected character '\\U0000003C'", GetDiagnosticTextWithEnglishCulture(actualErrors.ElementAt(200)));
+            Assert.Equal("(1,2011): error CS1056: Unexpected character '\\u003E\\u003E\\u003E\\u003E'", GetDiagnosticTextWithEnglishCulture(actualErrors.ElementAt(201)));
         }
 
         #region "Helpers"
@@ -229,6 +230,9 @@ class A
             var actualErrors = parsedTree.GetDiagnostics();
             actualErrors.Verify(expectedErrors);
         }
+
+        private static string GetDiagnosticTextWithEnglishCulture(Diagnostic diagnostic) 
+            => ((IFormattable)diagnostic).ToString("{0}", EnsureEnglishUICulture.PreferredOrNull);
 
         #endregion "Helpers"
     }
