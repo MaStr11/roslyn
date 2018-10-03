@@ -324,5 +324,48 @@ class C
     }
 }");
         }
+
+        [WorkItem(23581, "https://github.com/dotnet/roslyn/issues/23581")]
+        [Fact, Trait(Traits.Feature, Traits.Features.CodeActionsUseIsNullCheck)]
+        public async Task TestUnconstrainedMethodTypeParameter()
+        {
+            await TestInRegularAndScriptAsync(
+@"  
+public sealed class A
+{
+    public bool Test<T>(T a) => {|FixAllInDocument:ReferenceEquals|}(a, null);
+
+    public static void NotNull<T>(T value, string parameterName)
+    {
+        if (ReferenceEquals(value, null))
+        {
+            throw new ArgumentNullException(parameterName);
+        }
+    }
+}
+
+public class B<T>
+{
+    public bool Test(T b) => ReferenceEquals(b, null);
+}",
+@"  
+public sealed class A
+{
+    public bool Test<T>(T a) => a == null;
+
+    public static void NotNull<T>(T value, string parameterName)
+    {
+        if (value == null)
+        {
+            throw new ArgumentNullException(parameterName);
+        }
+    }
+}
+
+public class B<T>
+{
+    public bool Test(T b) => b == null;
+}");
+        }
     }
 }
